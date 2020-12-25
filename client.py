@@ -1,9 +1,7 @@
-from dataclasses import dataclass, field
 
-import pygame
-from pygame.locals import (K_DOWN, K_ESCAPE, K_LEFT, K_RIGHT, K_UP, KEYDOWN,
-                           QUIT)
+from player import Player
 from network import Network
+import pygame
 
 
 WIDTH, HEIGHT = 500, 500
@@ -14,100 +12,33 @@ pygame.display.set_caption('Client')
 client_number = 0
 
 
-class Player(pygame.sprite.Sprite):
-    def __init__(self, x: int, y: int, width: int, height: int, color: (int, int, int), vel: int = 3):
-        super(Player, self).__init__()
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.color = color
-        self.vel = vel
-        self.surf = pygame.Surface((self.width, self.height))
-        self.set_rect()
-        self.draw()
-
-    def set_rect(self):
-        self.rect = self.surf.get_rect()
-        self.rect.centerx = self.x
-        self.rect.centery = self.y
-
-    def draw(self):
-        """Drawing player on window (pygame.Surface)
-
-        Args:
-            win (pygame.Surface): pygame window surface
-        """
-        pygame.draw.rect(self.surf, self.color,
-                         (0, 0, self.width, self.height))
-
-    def move(self):
-        keys = pygame.key.get_pressed()
-
-        if keys[K_LEFT]:
-            self.rect.move_ip(-self.vel, 0)
-        if keys[K_RIGHT]:
-            self.rect.move_ip(self.vel, 0)
-        if keys[K_UP]:
-            self.rect.move_ip(0, -self.vel)
-        if keys[K_DOWN]:
-            self.rect.move_ip(0, self.vel)
-
-        # Keep player on the screen
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > WIDTH:
-            self.rect.right = WIDTH
-        if self.rect.top <= 0:
-            self.rect.top = 0
-        if self.rect.bottom >= HEIGHT:
-            self.rect.bottom = HEIGHT
-
-
-def read_pos(txt):
-    txt = txt.split(",")
-    return int(txt[0]), int(txt[1])
-
-
-def make_pos(tup):
-    return str(tup[0]) + "," + str(tup[1])
-
-
-def redraw_window(win, sprite_group):
+def redraw_window(win, sprite_group, p2):
     win.fill((255, 255, 255))
-    for entity in sprite_group:
-        win.blit(entity.surf, entity.rect)
-
+    for sprite in sprite_group:
+        sprite.draw(win)
+    p2.draw(win)
     pygame.display.update()
 
 
 def main():
     running = True
     n = Network()
-    start_pos = read_pos(n.get_pos())
-    p = Player(x=start_pos[0], y=start_pos[1], width=100,
-               height=100, color=(0, 255, 0))
-
-    p2 = Player(x=0, y=0, width=100,
-                height=100, color=(0, 0, 255))
+    p = n.get_p()
     clock = pygame.time.Clock()
     all_players = pygame.sprite.Group()
-
     all_players.add(p)
-    all_players.add(p2)
 
     while running:
         clock.tick(60)
-        p2_pos = read_pos(n.send(make_pos((p.rect.x, p.rect.y))))
-        p2.rect.x = p2_pos[0]
-        p2.rect.y = p2_pos[1]
+        p2 = n.send(p)
 
+        # all_players.add(p2)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                running = False
                 pygame.quit()
-        p.move()
-        redraw_window(win, all_players)
+        p.move(WIDTH, HEIGHT)
+        redraw_window(win, all_players, p2)
 
 
 if __name__ == "__main__":
