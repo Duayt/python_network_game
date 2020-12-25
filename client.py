@@ -1,14 +1,11 @@
-import pygame
 from dataclasses import dataclass, field
-from pygame.locals import (
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    K_ESCAPE,
-    KEYDOWN,
-    QUIT,
-)
+
+import pygame
+from pygame.locals import (K_DOWN, K_ESCAPE, K_LEFT, K_RIGHT, K_UP, KEYDOWN,
+                           QUIT)
+from network import Network
+
+
 WIDTH, HEIGHT = 500, 500
 
 win = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -26,7 +23,7 @@ class Player(pygame.sprite.Sprite):
     color: (int, int, int)
     vel: int = 3
     surf: pygame.Surface = field(init=False)
-    rect: (int, int, int, int) = field(init=False)
+    rect: pygame.Rect = field(init=False)
 
     def __post_init__(self):
         self.surf = pygame.Surface((self.width, self.height))
@@ -68,26 +65,45 @@ class Player(pygame.sprite.Sprite):
             self.rect.bottom = HEIGHT
 
 
-def redraw_window(win, player):
+def read_pos(txt):
+    txt = txt.split(",")
+    return int(txt[0]), int(txt[1])
+
+
+def make_pos(tup):
+    return str(tup[0]) + "," + str(tup[1])
+
+
+def redraw_window(win, player, player2):
     win.fill((255, 255, 255))
     player.draw(win)
+    player2.draw(win)
     pygame.display.update()
 
 
 def main():
     running = True
-    p = Player(x=WIDTH//2, y=HEIGHT//2, width=100,
+    n = Network()
+    start_pos = read_pos(n.get_pos())
+    p = Player(x=start_pos[0], y=start_pos[1], width=100,
                height=100, color=(0, 255, 0))
+
+    p2 = Player(x=0, y=0, width=100,
+                height=100, color=(0, 0, 255))
     clock = pygame.time.Clock()
 
     while running:
         clock.tick(60)
+        p2_pos = read_pos(n.send(make_pos((p.rect.x, p.rect.y))))
+        p2.rect.x = p2_pos[0]
+        p2.rect.y = p2_pos[1]
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
         p.move()
-        redraw_window(win, p)
+        redraw_window(win, p, p2)
 
 
 if __name__ == "__main__":
