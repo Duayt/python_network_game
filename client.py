@@ -1,5 +1,3 @@
-
-from player import Player
 from network import Network
 import pygame
 
