@@ -29,6 +29,9 @@ def make_pos(tup):
 # for 2 players position
 pos = [(0, 0), (100, 100)]
 
+global global_break
+global_break = False
+
 
 def threaded_client(conn, player):
     conn.send(str.encode(make_pos(pos[player])))
@@ -56,6 +59,8 @@ def threaded_client(conn, player):
 
     print("Lost connection")
     conn.close()
+    global global_break
+    global_break = True
 
 
 current_player = 0
@@ -64,3 +69,5 @@ while True:
     print(f"Connected to: {addr}")
     start_new_thread(threaded_client, (conn, current_player))
     current_player += 1
+    if global_break:
+        break

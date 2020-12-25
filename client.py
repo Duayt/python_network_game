@@ -14,33 +14,32 @@ pygame.display.set_caption('Client')
 client_number = 0
 
 
-@dataclass
 class Player(pygame.sprite.Sprite):
-    x: int
-    y: int
-    width: int
-    height: int
-    color: (int, int, int)
-    vel: int = 3
-    surf: pygame.Surface = field(init=False)
-    rect: pygame.Rect = field(init=False)
-
-    def __post_init__(self):
+    def __init__(self, x: int, y: int, width: int, height: int, color: (int, int, int), vel: int = 3):
+        super(Player, self).__init__()
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.vel = vel
         self.surf = pygame.Surface((self.width, self.height))
         self.set_rect()
+        self.draw()
 
     def set_rect(self):
         self.rect = self.surf.get_rect()
         self.rect.centerx = self.x
         self.rect.centery = self.y
 
-    def draw(self, win: pygame.Surface):
+    def draw(self):
         """Drawing player on window (pygame.Surface)
 
         Args:
             win (pygame.Surface): pygame window surface
         """
-        pygame.draw.rect(win, self.color, self.rect)
+        pygame.draw.rect(self.surf, self.color,
+                         (0, 0, self.width, self.height))
 
     def move(self):
         keys = pygame.key.get_pressed()
@@ -74,10 +73,11 @@ def make_pos(tup):
     return str(tup[0]) + "," + str(tup[1])
 
 
-def redraw_window(win, player, player2):
+def redraw_window(win, sprite_group):
     win.fill((255, 255, 255))
-    player.draw(win)
-    player2.draw(win)
+    for entity in sprite_group:
+        win.blit(entity.surf, entity.rect)
+
     pygame.display.update()
 
 
@@ -91,6 +91,10 @@ def main():
     p2 = Player(x=0, y=0, width=100,
                 height=100, color=(0, 0, 255))
     clock = pygame.time.Clock()
+    all_players = pygame.sprite.Group()
+
+    all_players.add(p)
+    all_players.add(p2)
 
     while running:
         clock.tick(60)
@@ -103,7 +107,7 @@ def main():
                 run = False
                 pygame.quit()
         p.move()
-        redraw_window(win, p, p2)
+        redraw_window(win, all_players)
 
 
 if __name__ == "__main__":
