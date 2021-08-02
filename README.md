@@ -39,7 +39,12 @@ venvdotapp
 pip install --no-cache-dir git+https://github.com/nelsonlove/pygame
 ```
 
-
+# heroku setup
+```
+heroku create
+```
 
 # Reference
 https://www.youtube.com/watch?v=McoDjOCb2Zo&t=3714s&ab_channel=freeCodeCamp.org
+https://www.youtube.com/watch?v=KQasIwElg3w&ab_channel=TechWithTim
+
