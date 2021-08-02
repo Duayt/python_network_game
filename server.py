@@ -2,14 +2,18 @@ import socket
 from _thread import start_new_thread
 from player import Player
 import pickle
-# IPv4 on local from ipconfig 192.168.1.113
-server = "192.168.1.113"
-port = 12345
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+SERVER = os.getenv('IP_ADDRESS')
+PORT = int(os.getenv('PORT'))
 
 s = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
 
 try:
-    s.bind((server, port))
+    s.bind((SERVER, PORT))
 except socket.error as e:
     print(e)
 
